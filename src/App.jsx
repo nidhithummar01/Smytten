@@ -9,12 +9,14 @@ import Analytics    from './pages/Analytics';
 import Integrations from './pages/Integrations';
 import SettingsPage from './pages/Settings';
 import AIChatBot    from './components/AIChatBot';
+import { alerts }   from './data/mockData';
 import { Bot }      from 'lucide-react';
 import './index.css';
 
 export default function App() {
   const [page, setPage] = useState('dashboard');
   const [chatOpen, setChatOpen] = useState(false);
+  const activeAlertCount = alerts.filter(alert => alert.severity !== 'resolved').length;
 
   const renderPage = () => {
     if (page === 'dashboard')    return <Dashboard />;
@@ -31,7 +33,17 @@ export default function App() {
     <div style={{ display:'flex', height:'100vh', overflow:'hidden', background:'var(--bg)' }}>
       <Sidebar active={page} onNav={setPage} />
       <div style={{ flex:1, display:'flex', flexDirection:'column', overflow:'hidden', minWidth:0 }}>
-        <Header alertCount={2} onToggleChat={() => setChatOpen(o => !o)} chatOpen={chatOpen} />
+        <Header
+          alertCount={activeAlertCount}
+          onAlertsClick={() => {
+            setPage('alerts');
+            setChatOpen(false);
+          }}
+          onSettingsClick={() => {
+            setPage('settings');
+            setChatOpen(false);
+          }}
+        />
         <div style={{ flex:1, display:'flex', overflow:'hidden' }}>
           <main style={{ flex:1, overflowY:'auto', background:'var(--bg)', minWidth:0 }}>
             {renderPage()}

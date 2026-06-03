@@ -1,7 +1,24 @@
-import { Search, Bell, RefreshCw, ChevronDown, Bot } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Search, Bell, RefreshCw, ChevronDown, Settings, LogOut } from 'lucide-react';
 import Button from './Button';
 
-export default function Header({ alertCount = 2, onToggleChat, chatOpen }) {
+export default function Header({ alertCount = 0, onAlertsClick, onSettingsClick }) {
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profileRef = useRef(null);
+
+  useEffect(() => {
+    if (!profileOpen) return undefined;
+
+    const closeOnOutsideClick = event => {
+      if (!profileRef.current?.contains(event.target)) {
+        setProfileOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', closeOnOutsideClick);
+    return () => document.removeEventListener('mousedown', closeOnOutsideClick);
+  }, [profileOpen]);
+
   return (
     <header style={{
       height: 60,
@@ -41,38 +58,19 @@ export default function Header({ alertCount = 2, onToggleChat, chatOpen }) {
         />
       </div>
 
-      {/* AI Chat Toggle */}
-      <button
-        onClick={onToggleChat}
-        title={chatOpen ? 'Close OpsBot' : 'Open OpsBot AI'}
-        style={{
-          display: 'flex', alignItems: 'center', gap: 6,
-          padding: '6px 13px', borderRadius: 8, border: 'none', cursor: 'pointer',
-          background: chatOpen ? 'linear-gradient(135deg, #4338CA, #6366F1)' : 'var(--primary-xl)',
-          color: chatOpen ? '#fff' : '#4338CA',
-          fontSize: 12, fontWeight: 600,
-          boxShadow: chatOpen ? '0 2px 10px rgba(67,56,202,0.3)' : 'none',
-          transition: 'all 0.2s',
-        }}
-        onMouseEnter={e => { if (!chatOpen) { e.currentTarget.style.background = '#E0E7FF'; } }}
-        onMouseLeave={e => { if (!chatOpen) { e.currentTarget.style.background = 'var(--primary-xl)'; } }}
-      >
-        <Bot size={13} />
-        OpsBot
-        <span style={{
-          width: 6, height: 6, borderRadius: '50%',
-          background: chatOpen ? '#4ADE80' : '#94A3B8',
-          animation: chatOpen ? 'pulse-r 2s infinite' : 'none',
-          flexShrink: 0,
-        }} />
-      </button>
-
       {/* Refresh */}
       <Button variant="icon" size="sm" title="Refresh data" icon={RefreshCw} style={{ padding:'7px 9px' }} />
 
       {/* Notifications */}
-      <div style={{ position: 'relative' }}>
-        <Button variant="icon" size="sm" title="Notifications" icon={Bell} style={{ padding:'7px 9px' }} />
+      <div ref={profileRef} style={{ position: 'relative' }}>
+        <Button
+          variant="icon"
+          size="sm"
+          title="Open alerts"
+          icon={Bell}
+          onClick={onAlertsClick}
+          style={{ padding:'7px 9px' }}
+        />
         {alertCount > 0 && (
           <span style={{
             position: 'absolute', top: -4, right: -4,
@@ -88,21 +86,105 @@ export default function Header({ alertCount = 2, onToggleChat, chatOpen }) {
       <div style={{ width: 1, height: 24, background: 'var(--border)' }} />
 
       {/* User */}
-      <Button variant="ghost" size="sm" style={{ gap: 8, padding:'4px 8px' }}>
-        <div style={{
-          width: 30, height: 30, borderRadius: '50%',
-          background: 'linear-gradient(135deg, #4338CA, #6366F1)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 11, fontWeight: 700, color: '#fff',
-          boxShadow: '0 2px 8px rgba(67,56,202,0.3)',
-          flexShrink: 0,
-        }}>OD</div>
-        <div style={{ textAlign: 'left' }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text)', lineHeight: 1.2 }}>Ops Director</div>
-          <div style={{ fontSize: 10, color: 'var(--muted)', fontWeight: 400 }}>Admin</div>
-        </div>
-        <ChevronDown size={12} color="var(--muted-l)" />
-      </Button>
+      <div style={{ position: 'relative' }}>
+        <Button
+          variant="ghost"
+          size="sm"
+          title="Open profile menu"
+          onClick={() => setProfileOpen(open => !open)}
+          style={{
+            gap: 8,
+            padding:'4px 8px',
+            background: profileOpen ? '#EEF2FF' : undefined,
+            borderColor: profileOpen ? '#C7D2FE' : undefined,
+          }}
+        >
+          <div style={{
+            width: 30, height: 30, borderRadius: '50%',
+            background: 'linear-gradient(135deg, #4338CA, #6366F1)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 11, fontWeight: 700, color: '#fff',
+            boxShadow: '0 2px 8px rgba(67,56,202,0.3)',
+            flexShrink: 0,
+          }}>OD</div>
+          <div style={{ textAlign: 'left' }}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text)', lineHeight: 1.2 }}>Ops Director</div>
+            <div style={{ fontSize: 10, color: 'var(--muted)', fontWeight: 400 }}>Admin</div>
+          </div>
+          <ChevronDown
+            size={12}
+            color="var(--muted-l)"
+            style={{ transform: profileOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.15s' }}
+          />
+        </Button>
+
+        {profileOpen && (
+          <div style={{
+            position: 'absolute',
+            top: 'calc(100% + 10px)',
+            right: 0,
+            width: 220,
+            background: '#fff',
+            border: '1px solid var(--border)',
+            borderRadius: 12,
+            boxShadow: '0 16px 40px rgba(15,23,42,0.16)',
+            padding: 10,
+            zIndex: 20,
+          }}>
+            <div style={{ padding: '8px 10px 10px', borderBottom: '1px solid var(--border-l)', marginBottom: 8 }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>Ops Director</div>
+              <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 2 }}>Admin access active</div>
+            </div>
+
+            <button
+              onClick={() => {
+                setProfileOpen(false);
+                onSettingsClick?.();
+              }}
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                padding: '9px 10px',
+                border: 'none',
+                borderRadius: 8,
+                background: 'transparent',
+                color: '#334155',
+                cursor: 'pointer',
+                fontSize: 12,
+                fontWeight: 600,
+                textAlign: 'left',
+              }}
+            >
+              <Settings size={14} />
+              Account settings
+            </button>
+
+            <button
+              onClick={() => setProfileOpen(false)}
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                padding: '9px 10px',
+                border: 'none',
+                borderRadius: 8,
+                background: 'transparent',
+                color: '#DC2626',
+                cursor: 'pointer',
+                fontSize: 12,
+                fontWeight: 600,
+                textAlign: 'left',
+              }}
+            >
+              <LogOut size={14} />
+              Sign out
+            </button>
+          </div>
+        )}
+      </div>
     </header>
   );
 }

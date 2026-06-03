@@ -14,7 +14,7 @@ import './index.css';
 
 export default function App() {
   const [page, setPage] = useState('dashboard');
-  const [chatOpen, setChatOpen] = useState(true);
+  const [chatOpen, setChatOpen] = useState(false);
 
   const renderPage = () => {
     if (page === 'dashboard')    return <Dashboard />;
